@@ -697,6 +697,8 @@ $(function () {
         $("#sidebar, #sidebarOverlay").removeClass("active");
     });
 
+
+
     setInterval(renderTracking, 60 * 1000);
 
     renderProducts();
@@ -706,3 +708,20 @@ $(function () {
     renderTracking();
     initHeroCarousel();
 });
+
+// ===== SPLASH SCREEN =====
+(function () {
+    const $splash = $("#splashScreen");
+    if (!$splash.length) return;
+
+    // Kunci scroll saat splash aktif
+    $("body").css("overflow", "hidden");
+
+    setTimeout(function () {
+        $splash.addClass("splash-up");
+        setTimeout(function () {
+            $splash.addClass("splash-hidden");
+            $("body").css("overflow", "");
+        }, 700); // cocokkan dengan duration-700
+    }, 2200); // tampil ±2.2 detik
+})();
