@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NusantaraCoffee - Kopi Bubuk Lokal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        #navbar.navbar-hidden {
+            transform: translateY(-120%);
+        }
+
+        #sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        #sidebar.active {
+            transform: translateX(0);
+        }
+
+        #sidebarOverlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #sidebarOverlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal>div {
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active>div {
+            transform: scale(1);
+        }
+
+        @keyframes cart-shake {
+
+            0%,
+            100% {
+                transform: translateX(0) rotate(0deg);
+            }
+
+            15% {
+                transform: translateX(-5px) rotate(-10deg);
+            }
+
+            30% {
+                transform: translateX(5px) rotate(10deg);
+            }
+
+            45% {
+                transform: translateX(-5px) rotate(-8deg);
+            }
+
+            60% {
+                transform: translateX(5px) rotate(8deg);
+            }
+
+            75% {
+                transform: translateX(-3px) rotate(-4deg);
+            }
+
+            90% {
+                transform: translateX(3px) rotate(4deg);
+            }
+        }
+
+        .animate-cart-shake {
+            animation: cart-shake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+            transform-origin: center;
+            display: inline-block;
+        }
+
+        @keyframes badge-pop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.5);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-badge-pop {
+            animation: badge-pop 0.4s ease-out;
+        }
+
+        @keyframes toast-in {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        .toast {
+            position: fixed;
+            top: 6rem;
+            left: 50%;
+            transform: translate(-50%, 0);
+            z-index: 9999;
+            background: #78350f;
+            color: #fff;
+            padding: 0.875rem 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            font-size: 0.9rem;
+            font-weight: 500;
+            animation: toast-in 0.3s ease-out;
+            max-width: 90vw;
+            text-align: center;
+        }
+
+        .star-rating-input {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 0.25rem;
+        }
+
+        .star-rating-input input {
+            display: none;
+        }
+
+        .star-rating-input label {
+            cursor: pointer;
+            color: #d6d3d1;
+            font-size: 1.5rem;
+            transition: color 0.15s;
+        }
+
+        .star-rating-input label:hover,
+        .star-rating-input label:hover~label,
+        .star-rating-input input:checked~label {
+            color: #f59e0b;
+        }
+    </style>
+</head>
+
+<body class="bg-stone-50 text-stone-800 antialiased">
+
+    <header id="navbar"
+        class="fixed top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-4 md:left-8 md:right-8 bg-white/90 backdrop-blur-md shadow-lg z-50 rounded-xl sm:rounded-2xl transition-transform duration-300">
+        <div class="max-w-7xl mx-auto px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 md:py-4 flex items-center gap-2 sm:gap-3">
+            <!-- Hamburger (mobile only) -->
+            <button id="sidebarToggle" type="button"
+                class="md:hidden shrink-0 w-9 h-9 flex items-center justify-center text-lg sm:text-xl text-stone-700 hover:bg-stone-100 rounded-lg focus:outline-none transition"
+                aria-label="Buka menu">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Brand -->
+            <div class="flex-1 min-w-0 flex items-center justify-center md:justify-start">
+                <a href="#home" class="text-base sm:text-lg md:text-xl font-bold text-amber-900 truncate max-w-full">
+                    <span class="sm:hidden">Nusantara</span>
+                    <span class="hidden sm:inline">NusantaraCoffee</span>
+                </a>
+            </div>
+
+            <!-- Nav desktop -->
+            <nav class="hidden md:flex gap-5 lg:gap-7 font-medium text-stone-600 shrink-0">
+                <a href="#home" class="hover:text-amber-800 transition">Beranda</a>
+                <a href="#about" class="hover:text-amber-800 transition">Asal-Usul</a>
+                <a href="#packaging" class="hover:text-amber-800 transition">Packaging</a>
+                <a href="#catalog" class="hover:text-amber-800 transition">Katalog</a>
+                <a href="#reviews" class="hover:text-amber-800 transition">Ulasan</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+                <button id="trackingBtn" type="button" title="Status Pengiriman"
+                    class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center text-stone-700 hover:text-amber-800 hover:bg-amber-50 rounded-lg text-lg sm:text-xl transition"
+                    aria-label="Status pengiriman">
+                    <i class="fas fa-truck-fast"></i>
+                </button>
+                <button id="cartBtn" type="button"
+                    class="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center text-stone-700 hover:text-amber-800 hover:bg-amber-50 rounded-lg text-lg sm:text-xl transition"
+                    aria-label="Keranjang">
+                    <i id="cartIcon" class="fas fa-shopping-cart"></i>
+                    <span id="cartCount"
+                        class="absolute -top-0.5 -right-0.5 min-w-[1.15rem] h-[1.15rem] flex items-center justify-center bg-amber-700 text-white text-[10px] sm:text-xs font-bold px-1 rounded-full leading-none">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <aside id="sidebar" class="fixed top-0 left-0 w-72 h-full bg-white shadow-2xl z-50 p-6 flex flex-col">
+        <div class="flex justify-between items-center border-b border-stone-200 pb-4 mb-6">
+            <h3 class="font-bold text-lg text-stone-800">Menu Navigasi</h3>
+            <button id="closeSidebar" class="text-2xl text-stone-500 hover:text-stone-800">&times;</button>
+        </div>
+        <ul class="flex flex-col gap-4 font-medium text-stone-600">
+            <li><a href="#home"
+                    class="flex items-center gap-3 p-2 rounded hover:bg-amber-50 hover:text-amber-900 transition"><i
+                        class="fas fa-home w-5"></i> Beranda</a></li>
+            <li><a href="#about"
+                    class="flex items-center gap-3 p-2 rounded hover:bg-amber-50 hover:text-amber-900 transition"><i
+                        class="fas fa-info-circle w-5"></i> Asal-Usul Kopi</a></li>
+            <li><a href="#packaging"
+                    class="flex items-center gap-3 p-2 rounded hover:bg-amber-50 hover:text-amber-900 transition"><i
+                        class="fas fa-box w-5"></i> Informasi Packaging</a></li>
+            <li><a href="#catalog"
+                    class="flex items-center gap-3 p-2 rounded hover:bg-amber-50 hover:text-amber-900 transition"><i
+                        class="fas fa-store w-5"></i> Katalog Kopi</a></li>
+            <li><a href="#reviews"
+                    class="flex items-center gap-3 p-2 rounded hover:bg-amber-50 hover:text-amber-900 transition"><i
+                        class="fas fa-star w-5"></i> Ulasan Pelanggan</a></li>
+            <li>
+                <button id="trackingBtnMobile" type="button"
+                    class="w-full flex items-center gap-3 p-2 rounded hover:bg-amber-50 hover:text-amber-900 transition text-left">
+                    <i class="fas fa-truck-fast w-5"></i> Pelacakan Pesanan
+                </button>
+            </li>
+        </ul>
+    </aside>
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-40"></div>
+
+    <main>
+        <section id="home" class="relative h-[min(72vh,420px)] sm:h-[80vh] md:h-[90vh] mt-14 sm:mt-16 overflow-hidden">
+            <div id="heroCarousel" class="relative w-full h-full">
+                <!-- Slide 0: Promo Beli 2 Diskon 15% (productId 1) -->
+                <div class="hero-slide absolute inset-0 opacity-100 transition-opacity duration-700 ease-in-out"
+                    data-index="0"
+                    style="background-image:linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.55)),url('https://www.malagri.com/blog/kopi/wp-content/uploads/2022/04/gayo_coffee.jpg');background-size:cover;background-position:center;">
+                    <div
+                        class="h-full flex items-center justify-center text-center text-white px-4 sm:px-6 pt-6 pb-14 sm:pb-16">
+                        <div class="max-w-2xl w-full">
+                            <span
+                                class="inline-block bg-amber-700/80 text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-1 rounded-full mb-3 sm:mb-4">Diskon
+                                15%</span>
+                            <h1
+                                class="text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-6 leading-snug sm:leading-tight">
+                                Beli 2 Pcs Kopi Gayo 250g – Hemat 15%</h1>
+                            <p
+                                class="text-sm sm:text-base md:text-lg text-stone-200 mb-5 sm:mb-8 line-clamp-3 sm:line-clamp-none">
+                                Single Origin pilihan dengan aroma fruity. Promo aktif otomatis di keranjang.</p>
+                            <a href="#catalog"
+                                class="bg-amber-800 hover:bg-amber-900 text-white text-sm sm:text-base font-medium px-5 sm:px-8 py-2.5 sm:py-3 rounded-lg shadow-lg transition inline-block">Pesan
+                                Sekarang</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 1: Promo Grosir 1 KG Hemat Rp 20.000 (productId 3) -->
+                <div class="hero-slide absolute inset-0 opacity-0 transition-opacity duration-700 ease-in-out"
+                    data-index="1"
+                    style="background-image:linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.55)),url('https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1600&q=80');background-size:cover;background-position:center;">
+                    <div
+                        class="h-full flex items-center justify-center text-center text-white px-4 sm:px-6 pt-6 pb-14 sm:pb-16">
+                        <div class="max-w-2xl w-full">
+                            <span
+                                class="inline-block bg-amber-700/80 text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-1 rounded-full mb-3 sm:mb-4">Hemat
+                                Rp 20.000</span>
+                            <h1
+                                class="text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-6 leading-snug sm:leading-tight">
+                                Grosir Kopi Gayo Specialty 1 KG</h1>
+                            <p
+                                class="text-sm sm:text-base md:text-lg text-stone-200 mb-5 sm:mb-8 line-clamp-3 sm:line-clamp-none">
+                                Cocok untuk cafe & stok bulanan. Langsung potongan Rp 20.000 di checkout.</p>
+                            <a href="#catalog"
+                                class="bg-amber-800 hover:bg-amber-900 text-white text-sm sm:text-base font-medium px-5 sm:px-8 py-2.5 sm:py-3 rounded-lg shadow-lg transition inline-block">Lihat
+                                Katalog</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2: Promo Wine Process Potongan Rp 15.000 (productId 4) -->
+                <div class="hero-slide absolute inset-0 opacity-0 transition-opacity duration-700 ease-in-out"
+                    data-index="2"
+                    style="background-image:linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.55)),url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1600&q=80');background-size:cover;background-position:center;">
+                    <div
+                        class="h-full flex items-center justify-center text-center text-white px-4 sm:px-6 pt-6 pb-14 sm:pb-16">
+                        <div class="max-w-2xl w-full">
+                            <span
+                                class="inline-block bg-amber-700/80 text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-1 rounded-full mb-3 sm:mb-4">Potongan
+                                Rp 15.000</span>
+                            <h1
+                                class="text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-6 leading-snug sm:leading-tight">
+                                Paket Coba Gayo Wine Process</h1>
+                            <p
+                                class="text-sm sm:text-base md:text-lg text-stone-200 mb-5 sm:mb-8 line-clamp-3 sm:line-clamp-none">
+                                Aroma wine khas & rasa manis tajam. Hemat Rp 15.000 untuk kemasan 250g.</p>
+                            <a href="#catalog"
+                                class="bg-amber-800 hover:bg-amber-900 text-white text-sm sm:text-base font-medium px-5 sm:px-8 py-2.5 sm:py-3 rounded-lg shadow-lg transition inline-block">Coba
+                                Sekarang</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3: Brand / Gratis Ongkir -->
+                <div class="hero-slide absolute inset-0 opacity-0 transition-opacity duration-700 ease-in-out"
+                    data-index="3"
+                    style="background-image:linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.55)),url('https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1600&q=80');background-size:cover;background-position:center;">
+                    <div
+                        class="h-full flex items-center justify-center text-center text-white px-4 sm:px-6 pt-6 pb-14 sm:pb-16">
+                        <div class="max-w-2xl w-full">
+                            <span
+                                class="inline-block bg-amber-700/80 text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-1 rounded-full mb-3 sm:mb-4">Gratis
+                                Ongkir</span>
+                            <h1
+                                class="text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-6 leading-snug sm:leading-tight">
+                                Gratis Ongkir Seluruh Indonesia</h1>
+                            <p
+                                class="text-sm sm:text-base md:text-lg text-stone-200 mb-5 sm:mb-8 line-clamp-3 sm:line-clamp-none">
+                                Minimal belanja Rp 150.000. Nikmati kopi Gayo segar sampai ke rumah.</p>
+                            <a href="#catalog"
+                                class="bg-amber-800 hover:bg-amber-900 text-white text-sm sm:text-base font-medium px-5 sm:px-8 py-2.5 sm:py-3 rounded-lg shadow-lg transition inline-block">Belanja
+                                Sekarang</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nav arrows -->
+            <button id="heroPrev" type="button" aria-label="Slide sebelumnya"
+                class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 text-white w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center transition text-sm sm:text-base">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button id="heroNext" type="button" aria-label="Slide berikutnya"
+                class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 text-white w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center transition text-sm sm:text-base">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+
+            <!-- Dots -->
+            <div id="heroDots"
+                class="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-2 sm:gap-3">
+                <button type="button"
+                    class="hero-dot w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-white scale-125 transition" data-index="0"
+                    aria-label="Slide 1"></button>
+                <button type="button"
+                    class="hero-dot w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-white/50 hover:bg-white transition"
+                    data-index="1" aria-label="Slide 2"></button>
+                <button type="button"
+                    class="hero-dot w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-white/50 hover:bg-white transition"
+                    data-index="2" aria-label="Slide 3"></button>
+                <button type="button"
+                    class="hero-dot w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-white/50 hover:bg-white transition"
+                    data-index="3" aria-label="Slide 4"></button>
+            </div>
+        </section>
+
+        <section id="about" class="py-20 px-6 max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-amber-900 mb-3">Sejarah & Wilayah Asal Kopi</h2>
+                <p class="text-stone-600">Menyelami tradisi dan perjalanan biji kopi terbaik dari tanah air</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold text-amber-900 mb-4">Dari Dataran Tinggi Gayo, Aceh</h3>
+                    <p class="text-stone-600 mb-6">Kopi bubuk unggulan kami berasal dari dataran tinggi Gayo, Aceh, yang
+                        telah lama diakui dunia sebagai salah satu produsen kopi Arabika terbaik.</p>
+                    <h3 class="text-xl font-semibold text-amber-900 mb-3">Karakteristik & Keunikan Rasa</h3>
+                    <ul class="space-y-3 text-stone-600">
+                        <li class="flex items-start gap-3"><i class="fas fa-check-circle text-amber-700 mt-1"></i>
+                            <div><strong>Aroma Khas:</strong> Memiliki aroma rempah (earthy) dan keharuman bunga yang
+                                kuat.</div>
+                        </li>
+                        <li class="flex items-start gap-3"><i class="fas fa-check-circle text-amber-700 mt-1"></i>
+                            <div><strong>Rasa (Flavor):</strong> Tingkat keasaman rendah dengan aftertaste yang bersih
+                                di tenggorokan.</div>
+                        </li>
+                        <li class="flex items-start gap-3"><i class="fas fa-check-circle text-amber-700 mt-1"></i>
+                            <div><strong>Proses Roasting:</strong> Disangrai menggunakan metode tradisional berstandar
+                                modern.</div>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <img src="assets/kopi.png" alt="Biji Kopi Nusantara"
+                        class="rounded-xl shadow-lg w-full object-cover transition transform hover:scale-[1.02]">
+                </div>
+            </div>
+        </section>
+
+        <section id="packaging" class="py-14 sm:py-20 px-4 sm:px-6 bg-stone-100">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-10 sm:mb-16">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-amber-900 mb-2 sm:mb-3">Informasi Packaging (Kemasan)
+                    </h2>
+                    <p class="text-sm sm:text-base text-stone-600 max-w-xl mx-auto">Menjaga kesegaran aroma kopi dan
+                        merayakan identitas budaya Gayo</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+                    <div class="order-1">
+                        <img src="assets/paket.png" alt="Kemasan Kopi NusantaraCoffee"
+                            class="rounded-xl sm:rounded-2xl shadow-lg w-full object-cover transition transform hover:scale-[1.02]">
+                    </div>
+
+                    <div class="order-2">
+                        <h3 class="text-xl sm:text-2xl font-semibold text-amber-900 mb-3 sm:mb-4">Konsep & Filosofi
+                            Desain</h3>
+                        <p class="text-sm sm:text-base text-stone-600 leading-relaxed mb-5 sm:mb-6">
+                            Konsep desain diambil dari makna motif <strong class="text-amber-900">Kerawang Gayo</strong>
+                            —
+                            simbol nilai kehidupan, persatuan, dan hubungan manusia dengan alam. Motif ini berasal dari
+                            adat
+                            Suku Gayo di dataran tinggi Aceh dan menjadi identitas visual khas daerah tersebut.
+                        </p>
+
+                        <p class="text-xs sm:text-sm font-semibold text-amber-800 uppercase tracking-wide mb-3">Makna
+                            Motif Utama</p>
+                        <ul class="space-y-3">
+                            <li
+                                class="flex items-start gap-3 bg-white/70 border border-stone-200 rounded-xl px-3.5 py-3 sm:px-4">
+                                <span
+                                    class="mt-0.5 w-8 h-8 shrink-0 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-sm">
+                                    <i class="fas fa-cloud"></i>
+                                </span>
+                                <div>
+                                    <p class="font-semibold text-stone-800 text-sm sm:text-base">Emun Berangkat</p>
+                                    <p class="text-xs sm:text-sm text-stone-500">Awan Berjalan — harapan & perjalanan
+                                        hidup</p>
+                                </div>
+                            </li>
+                            <li
+                                class="flex items-start gap-3 bg-white/70 border border-stone-200 rounded-xl px-3.5 py-3 sm:px-4">
+                                <span
+                                    class="mt-0.5 w-8 h-8 shrink-0 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-sm">
+                                    <i class="fas fa-link"></i>
+                                </span>
+                                <div>
+                                    <p class="font-semibold text-stone-800 text-sm sm:text-base">Puter Tali</p>
+                                    <p class="text-xs sm:text-sm text-stone-500">Tali Berpilin — persatuan & ikatan
+                                        sosial</p>
+                                </div>
+                            </li>
+                            <li
+                                class="flex items-start gap-3 bg-white/70 border border-stone-200 rounded-xl px-3.5 py-3 sm:px-4">
+                                <span
+                                    class="mt-0.5 w-8 h-8 shrink-0 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-sm">
+                                    <i class="fas fa-seedling"></i>
+                                </span>
+                                <div>
+                                    <p class="font-semibold text-stone-800 text-sm sm:text-base">Pucuk Rebung</p>
+                                    <p class="text-xs sm:text-sm text-stone-500">Pertumbuhan & harapan baru</p>
+                                </div>
+                            </li>
+                            <li
+                                class="flex items-start gap-3 bg-white/70 border border-stone-200 rounded-xl px-3.5 py-3 sm:px-4">
+                                <span
+                                    class="mt-0.5 w-8 h-8 shrink-0 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-sm">
+                                    <i class="fas fa-shoe-prints"></i>
+                                </span>
+                                <div>
+                                    <p class="font-semibold text-stone-800 text-sm sm:text-base">Tapak Sleman</p>
+                                    <p class="text-xs sm:text-sm text-stone-500">Jejak langkah & perjalanan hidup</p>
+                                </div>
+                            </li>
+                            <li
+                                class="flex items-start gap-3 bg-white/70 border border-stone-200 rounded-xl px-3.5 py-3 sm:px-4">
+                                <span
+                                    class="mt-0.5 w-8 h-8 shrink-0 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-sm">
+                                    <i class="fas fa-star"></i>
+                                </span>
+                                <div>
+                                    <p class="font-semibold text-stone-800 text-sm sm:text-base">Moniru</p>
+                                    <p class="text-xs sm:text-sm text-stone-500">Bintang — petunjuk arah & harapan</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="catalog" class="py-20 px-6 max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-amber-900 mb-3">Katalog Kopi Nusantara</h2>
+                <p class="text-stone-600">Pilih varian bubuk kopi lokal kesukaanmu</p>
+            </div>
+            <div id="productGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8"></div>
+        </section>
+
+        <section id="reviews" class="py-20 px-6 max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-amber-900 mb-3">Ulasan Pelanggan</h2>
+                <p class="text-stone-600">Apa kata mereka yang sudah mencoba kopi kami</p>
+            </div>
+
+            <!-- Form kirim ulasan -->
+            <div class="max-w-xl mx-auto mb-12 bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
+                <h3 class="text-lg font-semibold text-amber-900 mb-1">Tulis Ulasan Anda</h3>
+                <p class="text-sm text-stone-500 mb-5">Bagikan pengalaman Anda setelah mencoba kopi kami</p>
+                <form id="reviewForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 mb-1.5">Nama</label>
+                        <input type="text" name="reviewName" required maxlength="40" placeholder="Nama Anda"
+                            class="w-full px-3.5 py-2.5 text-sm border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-800 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 mb-1.5">Produk yang diulas</label>
+                        <select name="reviewProduct" required
+                            class="w-full px-3.5 py-2.5 text-sm border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-800 focus:border-transparent bg-white">
+                            <option value="">-- Pilih produk --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 mb-1.5">Rating</label>
+                        <div class="star-rating-input" id="starRatingInput">
+                            <input type="radio" name="reviewRating" value="5" id="star5" required>
+                            <label for="star5" title="5 bintang"><i class="fas fa-star"></i></label>
+                            <input type="radio" name="reviewRating" value="4" id="star4">
+                            <label for="star4" title="4 bintang"><i class="fas fa-star"></i></label>
+                            <input type="radio" name="reviewRating" value="3" id="star3">
+                            <label for="star3" title="3 bintang"><i class="fas fa-star"></i></label>
+                            <input type="radio" name="reviewRating" value="2" id="star2">
+                            <label for="star2" title="2 bintang"><i class="fas fa-star"></i></label>
+                            <input type="radio" name="reviewRating" value="1" id="star1">
+                            <label for="star1" title="1 bintang"><i class="fas fa-star"></i></label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 mb-1.5">Ulasan</label>
+                        <textarea name="reviewText" required maxlength="300" rows="3"
+                            placeholder="Ceritakan pengalaman Anda..."
+                            class="w-full px-3.5 py-2.5 text-sm border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-800 focus:border-transparent resize-y min-h-[80px]"></textarea>
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-medium text-sm py-3 rounded-xl transition shadow-sm">
+                        <i class="fas fa-paper-plane mr-2"></i>Kirim Ulasan
+                    </button>
+                </form>
+            </div>
+
+            <div id="reviewsGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+    </main>
+
+    <div id="cartModal"
+        class="modal fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div
+            class="bg-white w-full sm:w-11/12 max-w-lg rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl max-h-[92vh] sm:max-h-[90vh] flex flex-col">
+            <div
+                class="flex justify-between items-center gap-3 border-b border-stone-200 pb-3 sm:pb-4 mb-3 sm:mb-4 shrink-0">
+                <h3 class="font-bold text-base sm:text-lg text-stone-800 leading-snug">Keranjang Belanja</h3>
+                <button id="closeCart" type="button"
+                    class="shrink-0 w-9 h-9 flex items-center justify-center text-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition"
+                    aria-label="Tutup">&times;</button>
+            </div>
+
+            <div class="flex-1 min-h-0 max-h-[45vh] sm:max-h-60 overflow-y-auto divide-y divide-stone-100 mb-3 sm:mb-4"
+                id="cartItemsList"></div>
+
+            <div class="shrink-0 border-t border-stone-200 pt-3 sm:pt-4">
+                <div class="flex justify-between items-center mb-4 sm:mb-5">
+                    <span class="font-semibold text-sm sm:text-base text-stone-600">Total:</span>
+                    <span id="cartTotalPrice" class="font-bold text-lg sm:text-xl text-amber-900">Rp 0</span>
+                </div>
+                <button id="checkoutBtn" type="button"
+                    class="w-full bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white text-sm sm:text-base font-medium py-3 sm:py-3.5 rounded-xl transition shadow-sm">
+                    Lanjut ke Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="trackingModal"
+        class="modal fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div
+            class="bg-white w-full sm:w-full max-w-2xl rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
+            <div
+                class="sticky top-0 bg-white z-10 flex justify-between items-center gap-3 border-b border-stone-200 px-4 sm:px-6 py-4 sm:py-5">
+                <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <div
+                        class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-sm sm:text-base">
+                        <i class="fas fa-truck-fast"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="font-bold text-base sm:text-lg text-stone-800 leading-snug truncate">Status
+                            Pengiriman</h3>
+                        <p class="text-xs text-stone-500">Pantau pesanan kopi Anda</p>
+                    </div>
+                </div>
+                <button id="closeTracking" type="button"
+                    class="shrink-0 w-9 h-9 flex items-center justify-center text-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition"
+                    aria-label="Tutup">&times;</button>
+            </div>
+
+            <div class="p-4 sm:p-6">
+                <div id="trackingEmpty"
+                    class="bg-stone-50 p-6 sm:p-8 rounded-xl sm:rounded-2xl border border-stone-200 text-center">
+                    <i class="fas fa-box-open text-4xl sm:text-5xl text-stone-300 mb-3 sm:mb-4"></i>
+                    <p class="text-stone-500 text-sm sm:text-base mb-1.5 sm:mb-2">Belum ada pesanan yang sedang dikirim.
+                    </p>
+                    <p class="text-xs sm:text-sm text-stone-400">Checkout dulu, status pengiriman akan muncul di sini.
+                    </p>
+                    <button id="trackingCatalogBtn" type="button"
+                        class="inline-block mt-4 sm:mt-5 bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white text-sm sm:text-base font-medium px-5 sm:px-6 py-2.5 rounded-xl transition">
+                        Lihat Katalog
+                    </button>
+                </div>
+
+                <div id="trackingActive" class="hidden space-y-4 sm:space-y-6"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="checkoutModal"
+        class="modal fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div
+            class="bg-white w-full sm:w-11/12 max-w-lg rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
+            <div
+                class="flex justify-between items-start sm:items-center gap-3 border-b border-stone-200 pb-3 sm:pb-4 mb-4">
+                <div class="min-w-0">
+                    <h3 class="font-bold text-base sm:text-lg text-stone-800 leading-snug">Checkout & Pembayaran</h3>
+                    <p class="text-xs text-stone-500 mt-0.5 sm:hidden">Lengkapi data pengiriman Anda</p>
+                </div>
+                <button id="closeCheckout" type="button"
+                    class="shrink-0 w-9 h-9 flex items-center justify-center text-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition"
+                    aria-label="Tutup">&times;</button>
+            </div>
+
+            <form id="checkoutForm" class="space-y-3.5 sm:space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-stone-700 mb-1.5">Nama Lengkap</label>
+                    <input type="text" name="name" required placeholder="Masukkan nama Anda" autocomplete="name"
+                        class="w-full px-3.5 sm:px-4 py-2.5 sm:py-2.5 text-sm sm:text-base border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-800 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-stone-700 mb-1.5">Alamat Pengiriman Lengkap</label>
+                    <textarea name="address" required placeholder="Jl, RT/RW, kelurahan, kecamatan, kota, kode pos"
+                        rows="3"
+                        class="w-full px-3.5 sm:px-4 py-2.5 text-sm sm:text-base border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-800 focus:border-transparent resize-y min-h-[80px]"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-stone-700 mb-1.5">Metode Pembayaran</label>
+                    <select name="payment" required
+                        class="w-full px-3.5 sm:px-4 py-2.5 text-sm sm:text-base border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-800 focus:border-transparent bg-white">
+                        <option value="">-- Pilih Metode Pembayaran --</option>
+                        <option value="bca">Transfer Bank BCA</option>
+                        <option value="mandiri">Transfer Bank Mandiri</option>
+                        <option value="qris">QRIS / GoPay / OVO</option>
+                        <option value="cod">Bayar di Tempat (COD)</option>
+                    </select>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-medium text-sm sm:text-base py-3 sm:py-3.5 rounded-xl transition mt-2 sm:mt-4 shadow-sm">
+                    Proses Pesanan
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>
